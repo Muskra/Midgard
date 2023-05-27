@@ -24,4 +24,4 @@ Examples:
 
 If a parameter is used twice, the second one will overvrite the first parameter:
         e.g: 'game_of_life -i 46 --iterations 2'        number of iterations will be '2'
-             'game_of_life -c 144 -c 3'                 number of iterations will be '3'```
+             'game_of_life -c 144 -c 4577'                 number of iterations will be '4577'```
