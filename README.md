@@ -10,12 +10,12 @@ Conway's Game of Life implementation in Odinlang
 ```Usage: game_of_life [OPTION]... 
 A simple Conway's Game of life that generates a random grid.
 
-Without options, it launches with a default size of 80x80 characters (80 lines of 80 columns) and process one generation.
+Without options, it launches with a default size of 80x24 characters (80 columns for 24 lines) and process one generation.
 
   -c, --columns           number of columns, minimal value is 3, default value is 80
-  -l, --lines             number of lines, minimal value is 3, default value is 80
+  -l, --lines             number of lines, minimal value is 3, default value is 24
   -i, --iterations        number of iterations, default value is 0, maximum value is defined from you ambitions
-          e.g: you want to fry your CPU
+                                  e.g: you want to fry your CPU
   -h, --help        display this help message and exit
 
 Examples:
