@@ -20,10 +20,10 @@ main :: proc() {
   help_message :: `Usage: game_of_life [OPTION]... 
 A simple Conway's Game of life that generates a random grid.
 
-Without options, it launches with a default size of 80x80 characters (80 lines of 80 columns) and process one generation.
+Without options, it launches with a default size of 80x24 characters (24 lines of 80 columns) and process one generation.
 
   -c, --columns           number of columns, minimal value is 3, default value is 80
-  -l, --lines             number of lines, minimal value is 3, default value is 80
+  -l, --lines             number of lines, minimal value is 3, default value is 24
   -i, --iterations        number of iterations, default value is 0, maximum value is defined from you ambitions
           e.g: you want to fry your CPU
   -h, --help        display this help message and exit
@@ -79,7 +79,7 @@ If a parameter is used twice, the second one will overvrite the first parameter:
     grid.cols = 80
   }
   if grid.lines == 0 {
-    grid.lines = 80
+    grid.lines = 24
   }
 
   gol(grid, iterations)
@@ -106,6 +106,7 @@ If a parameter is used twice, the second one will overvrite the first parameter:
 gol :: proc(g: Grid, iterations: u8) {
   // allocate memory
   //
+  fmt.println(g)
   backing := make([]byte, g.lines * g.cols)
   assert(backing != nil, "out of memory: backing")
 
@@ -142,8 +143,9 @@ gol :: proc(g: Grid, iterations: u8) {
     }
   }
 
-  // first gen printout
+  // first gen (gen0) printout
   //
+  fmt.println("gen: 0")
   prntout(generation)
   
   // main loop
@@ -166,17 +168,12 @@ prntout :: proc(gen: [][]byte) {
 
 calculate_neighbors :: proc(idx: Indexes, grid: Grid, gen: [][]byte) -> (u8) {
   
-  // declarations
-  //
   lines := grid.lines-1
   cols := grid.cols-1
   xindex := u8(idx.x)
   yindex := u8(idx.y)
   count: u8 = 0
 
-  // checking throught the number of neighbors for each cells, the number of possible neighbors is 8
-  //
- 
   // first line
   if xindex == 0 {
     
