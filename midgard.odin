@@ -4,14 +4,14 @@ package main
 //
 import "core:fmt"
 import "core:math/rand"
-import "core:time"
 import "core:os"
 import "core:strconv"
+import "core:slice"
 
 // structs
 //
 Indexes :: struct { x, y: int }
-Grid :: struct { cols, lines: u8 }
+Grid :: struct { cols, lines: int }
 
 // main procedure
 //
@@ -39,8 +39,8 @@ If a parameter is used twice, the second one will overvrite the first parameter:
   error_message :: "game_of_life: invalid option %s\nTry 'game_of_life --help' for more information.\n"
   
   grid: Grid
-  iterations: u8
-  arg_as_numb := map[string]^u8{
+  iterations: int
+  arg_as_numb := map[string]^int{
     "-c" = &grid.cols,
     "--columns" = &grid.cols,
     "-l" = &grid.lines,
@@ -49,7 +49,6 @@ If a parameter is used twice, the second one will overvrite the first parameter:
     "--iterations" = &iterations,
   }
   arg_input := os.args
-  check: bool
 
   index := 0
   for ; index < len(arg_input); index += 1 {
@@ -82,14 +81,16 @@ If a parameter is used twice, the second one will overvrite the first parameter:
     grid.lines = 24
   }
 
+  // main loop
+  //
   gol(grid, iterations)
 
-  argument_parser :: proc(value: string) -> u8 {
+  argument_parser :: proc(value: string) -> int {
     temp, check := strconv.parse_int(value)
     if check == false {
       argument_help()
     }
-    return u8(temp) 
+    return temp 
   }
 
   argument_error :: proc(arg: string) -> ! {
@@ -103,52 +104,33 @@ If a parameter is used twice, the second one will overvrite the first parameter:
   }
 }
 
-gol :: proc(g: Grid, iterations: u8) {
-  // allocate memory
+gol :: proc(g: Grid, iterations: int) {
+  
+  // memory allocation
   //
-  fmt.println(g)
-  backing := make([]byte, g.lines * g.cols)
+  backing := make([]int, g.lines * g.cols)
   assert(backing != nil, "out of memory: backing")
 
-  generation := make([][]byte, g.lines)
+  generation := make([][]int, g.lines)
 
-  // generate the 2D slices for generation and neighborhood
-  //
-  for line in &generation {
-    line = make([]byte, g.cols)
+  for line, i in &generation {
+    line = backing[i*g.lines:][:g.cols]
     assert(line != nil, "out of memory: generation")
   }
 
   defer delete(generation)
   defer delete(backing)
 
-  r: rand.Rand // declare a random type
-  rand.init_as_system(&r) // initiate the random variable to use host's provided random
-
-  // assign a bit (0 or 1) with a parity choice instead of the ints in the grid
+  // gen 0
   //
   for line in &generation {
-    
-    // generating random numbers in the line
-    //
-    rand.read(line, &r)
-    
-    for value, y in &line {
-      if value%2 != 0 {
-        value = 1
-      }
-      if value%2 == 0 {
-        value = 0
-      }
-    }
+    line = randomize(line)
   }
 
-  // first gen (gen0) printout
-  //
   fmt.println("gen: 0")
   prntout(generation)
-  
-  // main loop
+
+  // next gen loop
   //
   for i in 0..<iterations {
     next_generation(g, generation)
@@ -157,7 +139,7 @@ gol :: proc(g: Grid, iterations: u8) {
   }
 }
 
-prntout :: proc(gen: [][]byte) {
+prntout :: proc(gen: [][]int) {
    for line in gen {
     for value in line {
       fmt.print(value)
@@ -166,13 +148,34 @@ prntout :: proc(gen: [][]byte) {
   }
 }
 
-calculate_neighbors :: proc(idx: Indexes, grid: Grid, gen: [][]byte) -> (u8) {
+randomize :: proc(l: []int) -> []int {
+  
+  r: rand.Rand // declare a random type
+  rand.init_as_system(&r) // initiate the random variable to use host's provided random
+  line := l
+
+  for i := 0; i < len(line); i += 1 {
+    line[i] = rand.int_max(999, &r)
+  }
+
+  for value, _ in &line {
+    if value%2 != 0 {
+      value = 1
+    }
+    if value%2 == 0 {
+      value = 0
+    }
+  }
+  return line
+}
+
+calculate_neighbors :: proc(idx: Indexes, grid: Grid, gen: [][]int) -> (int) {
   
   lines := grid.lines-1
   cols := grid.cols-1
-  xindex := u8(idx.x)
-  yindex := u8(idx.y)
-  count: u8 = 0
+  xindex := idx.x
+  yindex := idx.y
+  count: int = 0
 
   // first line
   if xindex == 0 {
@@ -223,7 +226,7 @@ calculate_neighbors :: proc(idx: Indexes, grid: Grid, gen: [][]byte) -> (u8) {
 
 }
 
-next_generation :: proc(grid: Grid, gen: [][]byte) {
+next_generation :: proc(grid: Grid, gen: [][]int) {
   
   for lines, xindex in gen {
     for cells, yindex in lines {
@@ -242,3 +245,4 @@ next_generation :: proc(grid: Grid, gen: [][]byte) {
     }
   }
 }
+
